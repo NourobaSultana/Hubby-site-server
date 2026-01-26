@@ -34,17 +34,42 @@ async function run() {
     const database = client.db("createGroupDB");
     const createGroupCollection = database.collection("creategroup");
 
+    const signInData = client.db("signInDB");
+    const signInDataCollection = signInData.collection("signin");
+
     app.get("/creategroup", async (req, res) => {
       const result = await createGroupCollection.find().toArray();
       res.send(result);
     });
 
+    app.get("/signin", async (req, res) => {
+      const result = await signInDataCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/users", async (req, res) => {
+      const result = await signInDataCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await signInDataCollection.deleteOne(query);
+      res.send(result);
+    });
     // view data er jonno
 
     app.get("/creategroup/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await createGroupCollection.findOne(query);
+      res.send(result);
+    });
+    app.get("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await signInDataCollection.findOne(query);
       res.send(result);
     });
 
@@ -55,6 +80,23 @@ async function run() {
       res.send(result);
     });
 
+    app.post("/signin", async (req, res) => {
+      const userProfile = req.body;
+      console.log(userProfile);
+      const result = await signInDataCollection.insertOne(userProfile);
+      res.send(result);
+    });
+    app.put("/creategroup/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateGroup = req.body;
+      const updatedDoc = {
+        $set: updateGroup,
+      };
+
+      const result = await createGroupCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
     app.delete("/creategroup/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -65,7 +107,7 @@ async function run() {
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
+      "Pinged your deployment. You successfully connected to MongoDB!",
     );
   } finally {
     // Ensures that the client will close when you finish/error
